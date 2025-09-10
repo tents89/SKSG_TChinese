@@ -2,7 +2,7 @@
 
 這是一個專為《Hollow Knight: Silksong》設計的全自動繁體中文化工具。只需簡單操作，即可將遊戲內的文本、字型替換為繁體中文版本。
 
-> **本工具的核心邏輯與程式碼全程由 AI (Gemini) 構建，並使用 Python 與 UnityPy 技術實現。**
+> **本工具的核心邏輯與程式碼均由 AI 構建，並使用 Python 與 UnityPy 技術實現。**
 
 ---
 
@@ -20,6 +20,8 @@
 2.  **位置**：
     * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下**。
     * **Windows**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
+  
+    **以下系統不確定是否可以使用**：
     * **macOS**: 通常是 `.../steamapps/common/Hollow Knight Silksong/` (執行檔需放在 `Hollow Knight Silksong.app` 旁邊)
     * **Linux**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
 
@@ -45,7 +47,7 @@
 
 ## ⚠️ 注意
 
-* 本工具會直接修改遊戲檔案，雖然內建備份功能，但仍強烈建議您在執行前手動備份一次遊戲。
+* 本工具會直接修改遊戲檔案，雖然內建備份功能，但如果失效請在Steam重新驗證檔案完整性。
 * 不保證遊戲每次更新都可以使用，但理應相容性極高。
 * 本工具與Team Cherry與Unity Technologies無關，皆為粉絲製作。請自行承擔使用風險。
 
