@@ -101,26 +101,28 @@ def run_modding():
             return
             
     print("\n[警告] 此操作將直接修改遊戲檔案。")
-    confirm = input("您是否要繼續執行？ (輸入小寫 'y' 確認): ").strip().lower()
+    confirm = input("您是否要繼續執行？ (輸入 'y' 確認): ").strip().lower()
     if confirm != 'y':
         print("操作已取消。")
         return
 
     try:
         # 建立備份
-        if not os.path.exists(BACKUP_FOLDER):
-            print("\n[步驟 1/4] 正在建立原始檔案備份...")
-            # 確保備份路徑中的所有資料夾都存在
-            backup_bundle_target = os.path.join(BACKUP_FOLDER, os.path.relpath(BUNDLE_FILE_PATH, GAME_ROOT_PATH))
-            backup_assets_target = os.path.join(BACKUP_FOLDER, os.path.relpath(TEXT_ASSETS_FILE_PATH, GAME_ROOT_PATH))
-            os.makedirs(os.path.dirname(backup_bundle_target), exist_ok=True)
-            os.makedirs(os.path.dirname(backup_assets_target), exist_ok=True)
-            
-            shutil.copy2(BUNDLE_FILE_PATH, backup_bundle_target)
-            shutil.copy2(TEXT_ASSETS_FILE_PATH, backup_assets_target)
-            print("備份已建立至 'Backup' 資料夾。")
-        else:
-            print("\n[步驟 1/4] 'Backup' 資料夾已存在，跳過備份步驟。")
+        if os.path.exists(BACKUP_FOLDER):
+            print("\n[步驟 1/4] 偵測到舊的備份資料夾，正在移除...")
+            shutil.rmtree(BACKUP_FOLDER)
+            print("舊備份已移除。")
+
+        print("\n[步驟 1/4] 正在建立新的原始檔案備份...")
+        # 確保備份路徑中的所有資料夾都存在
+        backup_bundle_target = os.path.join(BACKUP_FOLDER, os.path.relpath(BUNDLE_FILE_PATH, GAME_ROOT_PATH))
+        backup_assets_target = os.path.join(BACKUP_FOLDER, os.path.relpath(TEXT_ASSETS_FILE_PATH, GAME_ROOT_PATH))
+        os.makedirs(os.path.dirname(backup_bundle_target), exist_ok=True)
+        os.makedirs(os.path.dirname(backup_assets_target), exist_ok=True)
+        
+        shutil.copy2(BUNDLE_FILE_PATH, backup_bundle_target)
+        shutil.copy2(TEXT_ASSETS_FILE_PATH, backup_assets_target)
+        print("新備份已建立至 'Backup' 資料夾。")
 
         # 載入與修改資源
         print("\n[步驟 2/4] 正在載入資源並應用修改...")
@@ -222,8 +224,11 @@ def apply_bundle_modifications(obj):
         obj_type = obj.type.name
 
         # --- 處理字型 (MonoBehaviour)，採用完整替換邏輯 ---
-        if obj_type == "MonoBehaviour" and (asset_name == "chinese_body" or asset_name == "chinese_body_bold"):
-            source_json_path = os.path.join(FONT_SOURCE_FOLDER, f"{asset_name}.json")
+        if obj_type == "MonoBehaviour" and asset_name in ["chinese_body", "chinese_body_bold", "do_not_use_chinese_body_bold"]:
+            # 如果是新名稱，對應到舊名稱的JSON檔案
+            source_asset_name = "chinese_body_bold" if asset_name == "do_not_use_chinese_body_bold" else asset_name
+            source_json_path = os.path.join(FONT_SOURCE_FOLDER, f"{source_asset_name}.json")
+
             if os.path.exists(source_json_path):
                 original_tree = obj.read_typetree()
                 with open(source_json_path, "r", encoding="utf-8") as f:
@@ -238,9 +243,11 @@ def apply_bundle_modifications(obj):
                 print(f"  - [字型] 已從 JSON 完整替換 '{asset_name}' 的數據")
 
         # --- 處理材質 (Material)，由 JSON 驅動 ---
-        elif obj_type == "Material" and (asset_name == "simsun_tmpro Material" or asset_name == "chinese_body_bold Material"):
-            safe_name = sanitize_filename(asset_name)
+        elif obj_type == "Material" and asset_name in ["simsun_tmpro Material", "chinese_body_bold Material", "do_not_use_chinese_body_bold Material"]:
+            source_asset_name = "chinese_body_bold Material" if asset_name == "do_not_use_chinese_body_bold Material" else asset_name
+            safe_name = sanitize_filename(source_asset_name)
             source_json_path = os.path.join(MATERIAL_SOURCE_FOLDER, f"{safe_name}.json")
+            
             if os.path.exists(source_json_path):
                 original_tree = obj.read_typetree()
                 with open(source_json_path, "r", encoding="utf-8") as f:
@@ -250,9 +257,11 @@ def apply_bundle_modifications(obj):
                 print(f"  - [材質] 已從 JSON 更新 '{asset_name}'")
 
         # --- 處理紋理 (Texture2D)，增強穩定性 ---
-        elif obj_type == "Texture2D" and (asset_name == "chinese_body Atlas" or asset_name == "chinese_body_bold Atlas"):
-            safe_name = sanitize_filename(asset_name)
+        elif obj_type == "Texture2D" and asset_name in ["chinese_body Atlas", "chinese_body_bold Atlas", "do_not_use_chinese_body_bold Atlas"]:
+            source_asset_name = "chinese_body_bold Atlas" if asset_name == "do_not_use_chinese_body_bold Atlas" else asset_name
+            safe_name = sanitize_filename(source_asset_name)
             source_png_path = os.path.join(PNG_SOURCE_FOLDER, f"{safe_name}.png")
+            
             if os.path.exists(source_png_path):
                 with Image.open(source_png_path) as img:
                     data.image = img
@@ -283,20 +292,19 @@ def process_text_assets(env):
 # --- 主程式入口 ---
 # ==============================================================================
 def main_menu():
-    """顯示主選單並處理使用者輸入"""
     while True:
         # 清除主控台畫面，增強使用者體驗
         if sys.platform == 'win32': os.system('cls')
         
         print("="*60)
-        print("== 全自動化 Modding 工具 ==")
+        print("== 絲綢之歌繁體中文化工具1.0 ==")
         print("="*60)
         print(f"偵測到作業系統: {PLATFORM_NAME}")
         print(f"遊戲目錄: {GAME_ROOT_PATH}")
         
         if not BUNDLE_FILE_PATH:
-            print(f"\n[錯誤] (理論)不支援的作業系統 ({sys.platform})。")
-            print("(理論)本工具支援 Windows, macOS, 與 Linux。")
+            print(f"\n[錯誤] 不支援的作業系統 ({sys.platform})。")
+            print("本工具支援 Windows, macOS(理論), 與 Linux(理論)。")
             input("\n按下 Enter 鍵退出...")
             return
 
@@ -312,7 +320,7 @@ def main_menu():
         elif choice == '2': restore_backup()
         elif choice == '3': show_about()
         elif choice == '4':
-            print("程式退出。")
+            print("程式即將退出。")
             time.sleep(1)
             break
         else:
