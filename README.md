@@ -1,1 +1,60 @@
-# SKSO_TChinese
+# 絲綢之歌-繁體中文化一鍵處理工具
+
+這是一個專為《Hollow Knight: Silksong》設計的全自動繁體中文化工具。只需簡單操作，即可將遊戲內的文本、字型替換為繁體中文版本。
+
+> **本工具的核心邏輯與程式碼全程由 AI (Gemini) 構建，並使用 Python 與 UnityPy 技術實現。**
+
+---
+
+## 🚀 如何使用
+
+### 下載
+
+請前往**[Releases 頁面](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases)** 下載對應你作業系統的最新版本壓縮包。
+*(請記得將上方連結中的 `YOUR_USERNAME/YOUR_REPOSITORY` 替換成你自己的 GitHub 使用者名稱與專案名稱)*
+
+### 執行步驟
+
+1.  **解壓縮檔案**：
+    * 將下載的 `.zip` 檔案解壓縮，你會得到一個執行檔 (例如 `sk_cht_win.exe`, `sk_cht_mac`, 或 `sk_cht_linux`)。
+
+2.  **放置檔案**：
+    * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下**。
+    * **Windows**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
+    * **macOS**: 通常是 `.../steamapps/common/Hollow Knight Silksong/` (執行檔需放在 `Hollow Knight Silksong.app` 旁邊)
+    * **Linux**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
+
+3.  **執行工具**：
+    * **Windows**: 直接雙擊 `sk_cht_win.exe` 執行。程式會自動請求管理員權限。
+    * **macOS / Linux**: 開啟終端機 (Terminal)，並切換到遊戲根目錄。
+        * 首先，賦予檔案執行權限 (此步驟只需操作一次)：
+            ```bash
+            chmod +x ./sk_cht_mac
+            ```
+            *(若是 Linux 系統，請將指令中的 `sk_cht_mac` 改為 `sk_cht_linux`)*
+
+        * 然後，執行程式：
+            ```bash
+            ./sk_cht_mac
+            ```
+            *(同樣，Linux 用戶請執行 `./sk_cht_linux`)*
+
+4.  **依照選單操作**：
+    * 執行後會出現功能選單，輸入 `1` 即可開始繁體中文化處理。
+
+---
+
+## ⚠️ 注意事項
+
+* 本工具會直接修改遊戲檔案，雖然內建備份功能，但仍強烈建議您在執行前手動備份一次遊戲。
+* 請確保遊戲為最新版本，以獲得最佳相容性。
+* 本工具為粉絲創作，與官方無關。請自行承擔使用風險。
+
+---
+
+## 🔧 使用技術
+
+* **主要語言**: Python 3.12
+* **核心函式庫**: UnityPy (用於處理 Unity 遊戲資產)
+* **打包工具**: PyInstaller
+```eof
