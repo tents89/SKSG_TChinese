@@ -13,7 +13,7 @@ from UnityPy.files import BundleFile, SerializedFile
 from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 from PIL import Image
 
-# ==============================================================================
+# = a============================================================================
 # --- 0. 執行環境與權限檢查 ---
 # ==============================================================================
 def is_admin():
@@ -331,11 +331,22 @@ def main_menu():
         input("\n按下 Enter 鍵返回主選單...")
 
 if __name__ == "__main__":
-    # 在 Windows 平台，檢查並請求管理員權限
-    if sys.platform == 'win32' and not is_admin():
+    # 判斷是否為打包後的 .exe 執行檔
+    is_packaged = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+    # 僅在 Windows 打包後的 .exe 環境中，檢查並強制請求管理員權限
+    if sys.platform == 'win32' and is_packaged and not is_admin():
         print("偵測到需要管理員權限，正在嘗試重新啟動...")
         run_as_admin()
         sys.exit(0)
+    
+    # 在開發環境中 (.py)，如果沒有管理員權限，僅發出警告
+    if sys.platform == 'win32' and not is_packaged and not is_admin():
+        print("\n" + "="*60)
+        print("== [開發者警告] ==")
+        print("偵測到腳本未以管理員權限執行。")
+        print("部分檔案操作 (如覆蓋遊戲檔案) 可能會失敗。")
+        print("="*60 + "\n")
         
     main_menu()
 
