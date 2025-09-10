@@ -10,15 +10,14 @@
 
 ### 下載
 
-請前往**[Releases 頁面](https://github.com/YOUR_USERNAME/YOUR_REPOSITORY/releases)** 下載對應你作業系統的最新版本壓縮包。
-*(請記得將上方連結中的 `YOUR_USERNAME/YOUR_REPOSITORY` 替換成你自己的 GitHub 使用者名稱與專案名稱)*
+請前往 **[Releases 頁面](https://github.com/tents89/SKSO_TChinese/releases)** 下載對應你作業系統的最新版本壓縮包。
 
-### 執行步驟
+### 步驟
 
 1.  **解壓縮檔案**：
-    * 將下載的 `.zip` 檔案解壓縮，你會得到一個執行檔 (例如 `sk_cht_win.exe`, `sk_cht_mac`, 或 `sk_cht_linux`)。
+    * 將下載的 `.zip` 檔案解壓縮後會得到一個執行檔。
 
-2.  **放置檔案**：
+2.  **位置**：
     * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下**。
     * **Windows**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
     * **macOS**: 通常是 `.../steamapps/common/Hollow Knight Silksong/` (執行檔需放在 `Hollow Knight Silksong.app` 旁邊)
@@ -44,11 +43,11 @@
 
 ---
 
-## ⚠️ 注意事項
+## ⚠️ 注意
 
 * 本工具會直接修改遊戲檔案，雖然內建備份功能，但仍強烈建議您在執行前手動備份一次遊戲。
-* 請確保遊戲為最新版本，以獲得最佳相容性。
-* 本工具為粉絲創作，與官方無關。請自行承擔使用風險。
+* 不保證遊戲每次更新都可以使用，但理應相容性極高。
+* 本工具與Team Cherry與Unity Technologies無關，皆為粉絲製作。請自行承擔使用風險。
 
 ---
 
