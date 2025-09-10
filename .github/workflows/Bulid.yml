@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '要發布的版本號 (例如 v1.0.1)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.12]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Build on Windows
+        if: runner.os == 'Windows'
+        run: |
+          pyinstaller --onefile --icon=sk.ico --add-data "CHT;CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_win" sk_cht.py
+      
+      - name: Build on macOS
+        if: runner.os == 'macOS'
+        run: |
+          pyinstaller --onefile --icon=sk.icns --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_mac" sk_cht.py
+
+      - name: Build on Linux
+        if: runner.os == 'Linux'
+        run: |
+          pyinstaller --onefile --icon=sk.png --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_linux" sk_cht.py
+
+      - name: Archive and Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: executable-${{ runner.os }}
+          path: |
+            dist/sk_cht_win.exe
+            dist/sk_cht_mac
+            dist/sk_cht_linux
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Prepare Release Files
+        run: |
+          cd dist
+          find . -type f -name 'sk_cht_win.exe' -exec zip -j sk_cht-Windows.zip {} +
+          find . -type f -name 'sk_cht_mac' -exec zip -j sk_cht-macOS.zip {} +
+          find . -type f -name 'sk_cht_linux' -exec zip -j sk_cht-Linux.zip {} +
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          files: |
+            dist/sk_cht-Windows.zip
+            dist/sk_cht-macOS.zip
+            dist/sk_cht-Linux.zip
+
