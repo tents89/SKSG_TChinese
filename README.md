@@ -58,4 +58,4 @@
 * **主要語言**: Python 3.12
 * **核心函式庫**: UnityPy (用於處理 Unity 遊戲資產)
 * **打包工具**: PyInstaller
-```eof
+
