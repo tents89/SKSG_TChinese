@@ -2,6 +2,7 @@
 
 這是一個專為《Hollow Knight: Silksong》設計的全自動繁體中文化工具。只需簡單操作，即可將遊戲內的文本、字型替換為繁體中文版本。
 
+![image](https://github.com/tents89/SKSO_TChinese/blob/main/Tool.png)
 > **本工具的核心邏輯與程式碼均由 AI 構建，並使用 Python 與 UnityPy 技術實現。**
 
 ---
