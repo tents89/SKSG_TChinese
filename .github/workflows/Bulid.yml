@@ -35,26 +35,26 @@ jobs:
       - name: Build on Windows
         if: runner.os == 'Windows'
         run: |
-          pyinstaller --onefile --icon=sk.ico --add-data "CHT;CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_win" sk_cht.py
+          pyinstaller --onefile --icon=sk.ico --add-data "CHT;CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="SkilSong_CHT_win" sk_cht.py
       
       - name: Build on macOS
         if: runner.os == 'macOS'
         run: |
-          pyinstaller --onefile --icon=sk.icns --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_mac" sk_cht.py
+          pyinstaller --onefile --icon=sk.icns --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="SkilSong_CHT_mac" sk_cht.py
 
       - name: Build on Linux
         if: runner.os == 'Linux'
         run: |
-          pyinstaller --onefile --icon=sk.png --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="sk_cht_linux" sk_cht.py
+          pyinstaller --onefile --icon=sk.png --add-data "CHT:CHT" --collect-all UnityPy --collect-all TypeTreeGeneratorAPI --collect-all archspec --name="SkilSong_CHT_linux" sk_cht.py
 
       - name: Archive and Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: executable-${{ runner.os }}
           path: |
-            dist/sk_cht_win.exe
-            dist/sk_cht_mac
-            dist/sk_cht_linux
+            dist/SkilSong_CHT_win.exe
+            dist/SkilSong_CHT_mac
+            dist/SkilSong_CHT_linux
           if-no-files-found: error
 
   release:
@@ -72,17 +72,19 @@ jobs:
       - name: Prepare Release Files
         run: |
           cd dist
-          find . -type f -name 'sk_cht_win.exe' -exec zip -j sk_cht-Windows.zip {} +
-          find . -type f -name 'sk_cht_mac' -exec zip -j sk_cht-macOS.zip {} +
-          find . -type f -name 'sk_cht_linux' -exec zip -j sk_cht-Linux.zip {} +
+          find . -type f -name 'SkilSong_CHT_win.exe' -exec zip -j SkilSong_CHT-Windows.zip {} +
+          find . -type f -name 'SkilSong_CHT_mac' -exec zip -j SkilSong_CHT-macOS.zip {} +
+          find . -type f -name 'SkilSong_CHT_linux' -exec zip -j SkilSong_CHT-Linux.zip {} +
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
+          body: 更新補丁邏輯 使用前請使用舊版還原備份 以確保沒有問題。
           files: |
-            dist/sk_cht-Windows.zip
-            dist/sk_cht-macOS.zip
-            dist/sk_cht-Linux.zip
+            dist/SkilSong_CHT-Windows.zip
+            dist/SkilSong_CHT-macOS.zip
+            dist/SkilSong_CHT-Linux.zip
+
 
