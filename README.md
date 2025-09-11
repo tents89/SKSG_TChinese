@@ -29,19 +29,19 @@
     * **Linux**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
 
 3.  **執行工具**：
-    * **Windows**: 直接雙擊 `sk_cht_win.exe` 執行。程式會自動請求管理員權限。
+    * **Windows**: 直接雙擊 `SkilSong_CHT_win.exe` 執行。程式會自動請求管理員權限。
     * **macOS / Linux**: 開啟終端機 (Terminal)，並切換到遊戲根目錄。
         * 首先，賦予檔案執行權限 (此步驟只需操作一次)：
             ```bash
-            chmod +x ./sk_cht_mac
+            chmod +x ./SkilSong_CHT_mac
             ```
-            *(若是 Linux 系統，請將指令中的 `sk_cht_mac` 改為 `sk_cht_linux`)*
+            *(若是 Linux 系統，請將指令中的 `SkilSong_CHT_mac` 改為 `SkilSong_CHT_linux`)*
 
         * 然後，執行程式：
             ```bash
-            ./sk_cht_mac
+            ./SkilSong_CHT_mac
             ```
-            *(同樣，Linux 用戶請執行 `./sk_cht_linux`)*
+            *(同樣，Linux 用戶請執行 `./SkilSong_CHT_linux`)*
 
 5.  **依照選單操作**：
     * 執行後會出現功能選單，輸入 `1` 即可開始繁體中文化處理。
