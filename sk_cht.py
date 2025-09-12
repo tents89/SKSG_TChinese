@@ -25,24 +25,13 @@ from PIL import Image
 # --- Monkey-Patch for BC7 Compression ---
 # ==============================================================================
 print("[資訊] 應用 BC7 壓縮修正補丁...")
-# 儲存原始的壓縮函式
 original_compress_etcpak = Texture2DConverter.compress_etcpak
-
-# 定義我們自己的、修正過的壓縮函式
 def patched_compress_etcpak(data: bytes, width: int, height: int, target_texture_format: TextureFormat) -> bytes:
-    """
-    這是一個修正函式，用於解決 UnityPy 依賴的 etcpak 庫
-    在新版本中對 BC7 壓縮 API 的變更。
-    """
     if target_texture_format == TextureFormat.BC7:
-        # 對於 BC7 格式，我們需要手動創建並傳入一個 BC7CompressBlockParams 物件
         params = etcpak.BC7CompressBlockParams()
         return etcpak.compress_bc7(data, width, height, params)
     else:
-        # 對於所有其他格式，我們仍然使用原始的函式
         return original_compress_etcpak(data, width, height, target_texture_format)
-
-# 用我們修正過的函式替換掉 UnityPy 中的原始函式
 Texture2DConverter.compress_etcpak = patched_compress_etcpak
 print("[資訊] 補丁應用成功。")
 
@@ -50,19 +39,14 @@ print("[資訊] 補丁應用成功。")
 # --- 0. 執行環境與權限檢查 ---
 # ==============================================================================
 def is_admin():
-    """檢查當前是否以管理員權限執行 (僅限 Windows)"""
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
+    try: return ctypes.windll.shell32.IsUserAnAdmin()
+    except: return False
 
 def run_as_admin():
-    """以管理員權限重新執行腳本 (僅限 Windows)"""
     if sys.platform == 'win32':
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
 
 def get_base_path():
-    """ 獲取資源檔案的基礎路徑，兼容開發環境與 PyInstaller 打包環境 """
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         return sys._MEIPASS
     else:
@@ -72,32 +56,20 @@ def get_base_path():
 # --- FileWrapper 輔助類別 ---
 # ==============================================================================
 class FileWrapper:
-    """一個輔助類別，用於包裝修改後的資料流，同時保留原始檔案的元數據。"""
     def __init__(self, original_file, new_data_stream):
         self._original = original_file
         self._stream = new_data_stream
-
     @property
-    def Length(self):
-        return len(self._stream.getbuffer())
-
+    def Length(self): return len(self._stream.getbuffer())
     @property
-    def Position(self):
-        return self._stream.tell()
-
+    def Position(self): return self._stream.tell()
     @Position.setter
-    def Position(self, value):
-        self._stream.seek(value)
-
-    def read_bytes(self, length):
-        return self._stream.read(length)
-        
+    def Position(self, value): self._stream.seek(value)
+    def read_bytes(self, length): return self._stream.read(length)
     def save(self):
         self.Position = 0
         return self._stream.read()
-
-    def __getattr__(self, name):
-        return getattr(self._original, name)
+    def __getattr__(self, name): return getattr(self._original, name)
         
 # ==============================================================================
 # --- 1. 全域路徑與設定 ---
@@ -115,7 +87,6 @@ if sys.platform == "win32":
     BUNDLE_FILE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
     TITLE_BUNDLE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
     TEXT_ASSETS_FILE_PATH = os.path.join(SILKSONG_DATA_PATH, "resources.assets")
-
 elif sys.platform == "darwin":
     PLATFORM_NAME = "macOS"
     SILKSONG_DATA_PATH = os.path.join(GAME_ROOT_PATH, "Hollow Knight Silksong.app", "Contents", "Resources", "Data")
@@ -123,7 +94,6 @@ elif sys.platform == "darwin":
     BUNDLE_FILE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
     TITLE_BUNDLE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
     TEXT_ASSETS_FILE_PATH = os.path.join(SILKSONG_DATA_PATH, "resources.assets")
-
 elif sys.platform.startswith("linux"):
     PLATFORM_NAME = "Linux"
     SILKSONG_DATA_PATH = os.path.join(GAME_ROOT_PATH, "Hollow Knight Silksong_Data")
@@ -134,26 +104,16 @@ elif sys.platform.startswith("linux"):
 
 UNITY_VERSION = "6000.0.50f1"
 BACKUP_FOLDER = os.path.join(GAME_ROOT_PATH, "Backup")
-
 BUNDLED_DATA_PATH = get_base_path()
 CHT_FOLDER_PATH = os.path.join(BUNDLED_DATA_PATH, "CHT")
 FONT_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Font")
 PNG_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Png")
 TEXT_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Text")
-MATERIAL_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Font")
 TEMP_WORKSPACE_FOLDER = os.path.join(GAME_ROOT_PATH, "temp_workspace")
 
 # ==============================================================================
 # --- 輔助函數 ---
 # ==============================================================================
-def deep_update(original, new_data):
-    for key, value in new_data.items():
-        if isinstance(value, collections.abc.Mapping) and key in original and isinstance(original[key], collections.abc.Mapping):
-            original[key] = deep_update(original.get(key, {}), value)
-        else:
-            original[key] = value
-    return original
-
 def sanitize_filename(name):
     return "".join(c for c in name if c.isalnum() or c in " .-_()").replace(" ", "_")
 
@@ -233,6 +193,7 @@ def run_modding():
         if os.path.exists(TEMP_WORKSPACE_FOLDER): shutil.rmtree(TEMP_WORKSPACE_FOLDER)
 
 def restore_backup():
+    # ... (此函式無需改動)
     print("\n[開始執行還原備份流程]")
     if not os.path.exists(BACKUP_FOLDER):
         print("[錯誤] 找不到 'Backup' 資料夾，無法還原。")
@@ -254,6 +215,7 @@ def restore_backup():
         traceback.print_exc()
 
 def show_about():
+    # ... (此函式無需改動)
     print("\n" + "="*60)
     print("== 關於此工具 ==")
     print("\n本工具全程使用AI完成。")
@@ -266,41 +228,33 @@ def show_about():
 # ==============================================================================
 # --- 腳本核心邏輯 (處理 Unity 資源) ---
 # ==============================================================================
-
 def process_title_bundle(env):
-    """處理 title.spriteatlas.bundle，替換主選單 Logo。"""
+    # ... (此函式無需改動)
     print("[資訊] 開始處理 Title Bundle...")
     TARGET_ASSET_NAME = "sactx-0-1024x1024-BC7-Title-228dda81"
     SOURCE_PNG_NAME = "logo.png"
     source_png_path = os.path.join(PNG_SOURCE_FOLDER, SOURCE_PNG_NAME)
-
     if not os.path.exists(source_png_path):
         print(f"  - [警告] 找不到源文件 '{SOURCE_PNG_NAME}'，跳過 Title Logo 替換。")
         return
-
     for obj in env.objects:
         if obj.type.name == "Texture2D":
             try:
                 data = obj.read()
                 if hasattr(data, "m_Name") and data.m_Name == TARGET_ASSET_NAME:
                     print(f"  - [紋理] 找到目標 Title Logo: '{data.m_Name}'")
-                    
                     if not (data.m_StreamData and data.m_StreamData.path):
                         print("  - [警告] Title Logo 不是 .resS 格式，暫不支援此種替換。")
                         break
-
                     with Image.open(source_png_path) as img:
                         image_binary, new_format = Texture2DConverter.image_to_texture2d(img, data.m_TextureFormat, data.assets_file.target_platform)
-
                     resS_path = os.path.basename(data.m_StreamData.path)
                     bundle_file = data.assets_file.parent
                     resS_file = bundle_file.files[resS_path]
-                    
                     new_ress_stream = BytesIO(image_binary)
                     wrapper = FileWrapper(resS_file, new_ress_stream)
                     bundle_file.files[resS_path] = wrapper
                     print(f"    - [資訊] 已為 '{resS_path}' 創建新的數據流。")
-
                     data.m_StreamData.offset = 0
                     data.m_StreamData.size = len(image_binary)
                     data.m_Width = img.width
@@ -310,13 +264,13 @@ def process_title_bundle(env):
                     if hasattr(data, 'image_data'): data.image_data = b""
                     data.save()
                     print(f"    - [紋理] 已成功更新 '{data.m_Name}' 的元數據。")
-                    
                     break
             except Exception as e:
                 print(f"  - [嚴重警告] 處理 Title Logo 時發生錯誤: {e}")
                 traceback.print_exc()
                 break
 
+# --- 核心修改點：更新 process_font 和 process_material ---
 def process_font(obj_reader):
     try:
         data = obj_reader.read()
@@ -325,27 +279,64 @@ def process_font(obj_reader):
         source_json_path = os.path.join(FONT_SOURCE_FOLDER, f"{source_asset_name}.json")
         if os.path.exists(source_json_path):
             original_tree = obj_reader.read_typetree()
-            with open(source_json_path, "r", encoding="utf-8") as f: source_dict = json.load(f)
+            with open(source_json_path, "r", encoding="utf-8") as f:
+                # 使用 decimal.Decimal 來讀取 JSON，以保留浮點數精度
+                # 如果不需要，簡單的 json.load 也可以
+                source_dict = json.load(f)
+
+            # 完全替換邏輯：以源 JSON 為準
             if "m_fontInfo" in source_dict: original_tree["m_fontInfo"] = source_dict["m_fontInfo"]
             if "m_glyphInfoList" in source_dict: original_tree["m_glyphInfoList"] = source_dict["m_glyphInfoList"]
+            
             obj_reader.save_typetree(original_tree)
             print(f"  - [字型] 已從 JSON 完整替換 '{asset_name}' 的數據")
     except Exception as e:
-        print(f"  - [警告] 處理字型 '{getattr(obj_reader, 'm_Name', '未知')}' 時出錯: {e}")
+        print(f"  - [警告] 處理字型 '{getattr(data, 'm_Name', '未知')}' 時出錯: {e}")
 
 def process_material(obj_reader):
     try:
-        data = obj_reader.read()
-        asset_name = data.m_Name
-        source_asset_name = "chinese_body_bold Material" if asset_name == "do_not_use_chinese_body_bold Material" else asset_name
-        safe_name = sanitize_filename(source_asset_name)
-        source_json_path = os.path.join(MATERIAL_SOURCE_FOLDER, f"{safe_name}.json")
-        if os.path.exists(source_json_path):
-            original_tree = obj_reader.read_typetree()
-            with open(source_json_path, "r", encoding="utf-8") as f: source_dict = json.load(f)
-            updated_tree = deep_update(original_tree, source_dict)
-            obj_reader.save_typetree(updated_tree)
-            print(f"  - [材質] 已從 JSON 更新 '{asset_name}'")
+        tree = obj_reader.read_typetree()
+        asset_name = tree.get("m_Name", "未知材質")
+
+        if "m_SavedProperties" in tree and "m_Floats" in tree["m_SavedProperties"]:
+            # 創建一個新的列表來儲存修改後的浮點數屬性
+            new_floats = []
+            
+            # 標記我們是否找到了需要修改的屬性
+            height_modified = False
+            width_modified = False
+
+            # 遍歷舊的列表（或元組列表）
+            for key, value in tree["m_SavedProperties"]["m_Floats"]:
+                if key == "_TextureHeight":
+                    # 如果找到了，將修改後的值加入新列表
+                    new_floats.append([key, 4096.0])
+                    height_modified = True
+                elif key == "_TextureWidth":
+                    # 如果找到了，將修改後的值加入新列表
+                    new_floats.append([key, 4096.0])
+                    width_modified = True
+                else:
+                    # 如果不是我們要修改的，就將原始的鍵值對加入新列表
+                    new_floats.append([key, value])
+            
+            # 如果遍歷完畢後發現原始資料中沒有這兩個屬性，就手動添加
+            if not height_modified:
+                new_floats.append(["_TextureHeight", 4096.0])
+                print(f"    - [資訊] 在 '{asset_name}' 中添加了 _TextureHeight")
+            if not width_modified:
+                new_floats.append(["_TextureWidth", 4096.0])
+                print(f"    - [資訊] 在 '{asset_name}' 中添加了 _TextureWidth")
+            
+            # 用我們創建的、完全可修改的新列表，替換掉原始的 m_Floats
+            tree["m_SavedProperties"]["m_Floats"] = new_floats
+            
+            # 保存修改後的完整 typetree
+            obj_reader.save_typetree(tree)
+            print(f"  - [材質] 已直接修改 '{asset_name}' 的紋理尺寸屬性")
+        else:
+            print(f"  - [警告] 材質 '{asset_name}' 結構不符合預期，跳過修改。")
+
     except Exception as e:
         print(f"  - [警告] 處理材質 '{getattr(obj_reader, 'm_Name', '未知')}' 時出錯: {e}")
 
@@ -366,6 +357,7 @@ def process_embedded_texture(data):
         print(f"  - [警告] 處理內嵌紋理 '{data.m_Name}' 時出錯: {e}")
 
 def process_ress_texture_group(texture_group):
+    # ... (此函式無需改動)
     if not texture_group: return
     first_texture = texture_group[0]
     resS_path = os.path.basename(first_texture.m_StreamData.path)
@@ -413,6 +405,7 @@ def process_ress_texture_group(texture_group):
         traceback.print_exc()
 
 def process_bundle(env):
+    # ... (此函式無需改動)
     print("[資訊] 正在分析與分類所有資源...")
     all_objects = []
     def find_all_objects(container):
@@ -460,6 +453,7 @@ def process_bundle(env):
         process_material(mat_data.object_reader)
 
 def process_text_assets(env):
+    # ... (此函式無需改動)
     text_target_assets = {"ZH_Achievements", "ZH_AutoSaveNames", "ZH_Belltown", "ZH_Bonebottom", "ZH_Caravan", "ZH_City", "ZH_Coral", "ZH_Crawl", "ZH_Credits List", "ZH_Deprecated", "ZH_Dust", "ZH_Enclave", "ZH_Error", "ZH_Fast Travel", "ZH_Forge", "ZH_General", "ZH_Greymoor", "ZH_Inspect", "ZH_Journal", "ZH_Lore", "ZH_MainMenu", "ZH_Map Zones", "ZH_Peak", "ZH_Pilgrims", "ZH_Prompts", "ZH_Quests", "ZH_Shellwood", "ZH_Shop", "ZH_Song", "ZH_Titles", "ZH_Tools", "ZH_UI", "ZH_Under", "ZH_Wanderers", "ZH_Weave", "ZH_Wilds"}
     for obj in env.objects:
         if obj.type.name == "TextAsset":
@@ -476,11 +470,12 @@ def process_text_assets(env):
 # --- 主程式入口 ---
 # ==============================================================================
 def main_menu():
+    # ... (此函式無需改動)
     while True:
         if sys.platform == 'win32': os.system('cls')
         
         print("="*60)
-        print("== 絲綢之歌繁體中文化工具 v1.0 ==")
+        print("== 絲綢之歌繁體中文化工具 v1.1 ==") # 版本號更新
         print("="*60)
         print(f"作業系統: {PLATFORM_NAME}")
         print(f"遊戲目錄: {GAME_ROOT_PATH}")
@@ -513,6 +508,7 @@ def main_menu():
         input("\n按下 Enter 鍵返回主選單...")
 
 if __name__ == "__main__":
+    # ... (此函式無需改動)
     is_packaged = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
     if sys.platform == 'win32' and is_packaged and not is_admin():
         print("偵測到需要管理員權限，正在嘗試重新啟動...")
