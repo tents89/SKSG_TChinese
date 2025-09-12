@@ -153,12 +153,25 @@ def run_modding():
         shutil.copy2(TITLE_BUNDLE_PATH, backup_title_target)
         print("新備份已建立至 'Backup' 資料夾。")
 
+        # 載入與修改資源
         print("\n[步驟 2/4] 正在載入資源並應用修改...")
         if os.path.exists(TEMP_WORKSPACE_FOLDER): shutil.rmtree(TEMP_WORKSPACE_FOLDER)
         os.makedirs(TEMP_WORKSPACE_FOLDER, exist_ok=True)
         if UNITY_VERSION: UnityPy.config.FALLBACK_UNITY_VERSION = UNITY_VERSION
+        
+        # --- Mac版修正點 ---
         generator = TypeTreeGenerator(UNITY_VERSION)
-        generator.load_local_game(GAME_ROOT_PATH)
+        
+        # 根據平台使用不同的載入方法
+        if sys.platform == "darwin": # macOS
+            print("[資訊] 偵測到 macOS，使用 DLL 資料夾模式載入 TypeTreeGenerator...")
+            # 構建到 Managed 資料夾的精確路徑
+            managed_folder_path = os.path.join(SILKSONG_DATA_PATH, "Managed")
+            generator.load_dll_folder(managed_folder_path)
+        else: # Windows and Linux
+            generator.load_local_game(GAME_ROOT_PATH)
+        
+        #
         bundle_env = UnityPy.load(BUNDLE_FILE_PATH)
         bundle_env.typetree_generator = generator
         text_env = UnityPy.load(TEXT_ASSETS_FILE_PATH)
@@ -170,6 +183,7 @@ def run_modding():
         process_title_bundle(title_env)
         print("資源修改完成。")
 
+        # ... (重新打包和覆蓋檔案的程式碼保持不變) ...
         print("\n[步驟 3/4] 正在重新打包修改後的檔案...")
         modified_bundle_path = os.path.join(TEMP_WORKSPACE_FOLDER, os.path.basename(BUNDLE_FILE_PATH))
         modified_text_assets_path = os.path.join(TEMP_WORKSPACE_FOLDER, os.path.basename(TEXT_ASSETS_FILE_PATH))
@@ -475,7 +489,7 @@ def main_menu():
         if sys.platform == 'win32': os.system('cls')
         
         print("="*60)
-        print("== 絲綢之歌繁體中文化工具 v1.1 ==") # 版本號更新
+        print("== 絲綢之歌繁體中文化工具 v1.2 ==") # 版本號更新
         print("="*60)
         print(f"作業系統: {PLATFORM_NAME}")
         print(f"遊戲目錄: {GAME_ROOT_PATH}")
