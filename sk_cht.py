@@ -245,7 +245,7 @@ def show_about():
 def process_title_bundle(env):
     # ... (此函式無需改動)
     print("[資訊] 開始處理 Title Bundle...")
-    TARGET_ASSET_NAME = "sactx-0-1024x1024-BC7-Title-228dda81"
+    TARGET_ASSET_NAME_PREFIX = "sactx-0-1024x1024-BC7-Title-"
     SOURCE_PNG_NAME = "logo.png"
     source_png_path = os.path.join(PNG_SOURCE_FOLDER, SOURCE_PNG_NAME)
     if not os.path.exists(source_png_path):
@@ -255,7 +255,7 @@ def process_title_bundle(env):
         if obj.type.name == "Texture2D":
             try:
                 data = obj.read()
-                if hasattr(data, "m_Name") and data.m_Name == TARGET_ASSET_NAME:
+                if hasattr(data, "m_Name") and data.m_Name.startswith(TARGET_ASSET_NAME):
                     print(f"  - [紋理] 找到目標 Title Logo: '{data.m_Name}'")
                     if not (data.m_StreamData and data.m_StreamData.path):
                         print("  - [警告] Title Logo 不是 .resS 格式，暫不支援此種替換。")
