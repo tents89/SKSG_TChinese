@@ -70,7 +70,7 @@ class FileWrapper:
         self.Position = 0
         return self._stream.read()
     def __getattr__(self, name): return getattr(self._original, name)
-        
+
 # ==============================================================================
 # --- 1. 全域路徑與設定 ---
 # ==============================================================================
@@ -128,7 +128,7 @@ def run_modding():
             print(f"\n[錯誤] 關鍵路徑或檔案不存在: {path}")
             print(f"請確保此程式位於遊戲根目錄下，且 {PLATFORM_NAME} 版本的遊戲檔案完整。")
             return
-            
+
     print("\n[警告] 此操作將直接修改遊戲檔案。")
     confirm = input("您是否要繼續執行？ (輸入 'y' 確認): ").strip().lower()
     if confirm != 'y':
@@ -158,19 +158,19 @@ def run_modding():
         if os.path.exists(TEMP_WORKSPACE_FOLDER): shutil.rmtree(TEMP_WORKSPACE_FOLDER)
         os.makedirs(TEMP_WORKSPACE_FOLDER, exist_ok=True)
         if UNITY_VERSION: UnityPy.config.FALLBACK_UNITY_VERSION = UNITY_VERSION
-        
+
         # --- Mac版修正點 ---
         generator = TypeTreeGenerator(UNITY_VERSION)
-        
+
         # 根據平台使用不同的載入方法
         if sys.platform == "darwin": # macOS
             print("[資訊] 偵測到 macOS，使用 DLL 資料夾模式載入 TypeTreeGenerator...")
             # 構建到 Managed 資料夾的精確路徑
             managed_folder_path = os.path.join(SILKSONG_DATA_PATH, "Managed")
-            generator.load_dll_folder(managed_folder_path)
+            generator.load_local_dll_folder(managed_folder_path)
         else: # Windows and Linux
             generator.load_local_game(GAME_ROOT_PATH)
-        
+
         #
         bundle_env = UnityPy.load(BUNDLE_FILE_PATH)
         bundle_env.typetree_generator = generator
@@ -301,7 +301,7 @@ def process_font(obj_reader):
             # 完全替換邏輯：以源 JSON 為準
             if "m_fontInfo" in source_dict: original_tree["m_fontInfo"] = source_dict["m_fontInfo"]
             if "m_glyphInfoList" in source_dict: original_tree["m_glyphInfoList"] = source_dict["m_glyphInfoList"]
-            
+
             obj_reader.save_typetree(original_tree)
             print(f"  - [字型] 已從 JSON 完整替換 '{asset_name}' 的數據")
     except Exception as e:
@@ -315,7 +315,7 @@ def process_material(obj_reader):
         if "m_SavedProperties" in tree and "m_Floats" in tree["m_SavedProperties"]:
             # 創建一個新的列表來儲存修改後的浮點數屬性
             new_floats = []
-            
+
             # 標記我們是否找到了需要修改的屬性
             height_modified = False
             width_modified = False
@@ -333,7 +333,7 @@ def process_material(obj_reader):
                 else:
                     # 如果不是我們要修改的，就將原始的鍵值對加入新列表
                     new_floats.append([key, value])
-            
+
             # 如果遍歷完畢後發現原始資料中沒有這兩個屬性，就手動添加
             if not height_modified:
                 new_floats.append(["_TextureHeight", 4096.0])
@@ -341,10 +341,10 @@ def process_material(obj_reader):
             if not width_modified:
                 new_floats.append(["_TextureWidth", 4096.0])
                 print(f"    - [資訊] 在 '{asset_name}' 中添加了 _TextureWidth")
-            
+
             # 用我們創建的、完全可修改的新列表，替換掉原始的 m_Floats
             tree["m_SavedProperties"]["m_Floats"] = new_floats
-            
+
             # 保存修改後的完整 typetree
             obj_reader.save_typetree(tree)
             print(f"  - [材質] 已直接修改 '{asset_name}' 的紋理尺寸屬性")
@@ -395,7 +395,7 @@ def process_ress_texture_group(texture_group):
             data_dict["new_offset"] = current_offset
             new_ress_stream.write(data_dict["image_binary"])
             current_offset += len(data_dict["image_binary"])
-        
+
         resS_file = bundle_file.files[resS_path]
         original_obj = resS_file._original if isinstance(resS_file, FileWrapper) else resS_file
         wrapper = FileWrapper(original_obj, new_ress_stream)
@@ -487,13 +487,13 @@ def main_menu():
     # ... (此函式無需改動)
     while True:
         if sys.platform == 'win32': os.system('cls')
-        
+
         print("="*60)
         print("== 絲綢之歌繁體中文化工具 v1.2 ==") # 版本號更新
         print("="*60)
         print(f"作業系統: {PLATFORM_NAME}")
         print(f"遊戲目錄: {GAME_ROOT_PATH}")
-        
+
         if not BUNDLE_FILE_PATH:
             print(f"\n[錯誤] 不支援的作業系統 ({sys.platform})。")
             input("\n按下 Enter 鍵退出...")
@@ -504,9 +504,9 @@ def main_menu():
         print("  2. 還原備份")
         print("  3. 關於")
         print("  4. 退出\n")
-        
+
         choice = input("請輸入選項 [1-4]: ").strip()
-        
+
         if choice == '1': run_modding()
         elif choice == '2': restore_backup()
         elif choice == '3': show_about()
@@ -518,7 +518,7 @@ def main_menu():
             print("\n無效的指令，請重新輸入。")
             time.sleep(1)
             continue
-            
+
         input("\n按下 Enter 鍵返回主選單...")
 
 if __name__ == "__main__":

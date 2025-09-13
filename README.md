@@ -58,7 +58,17 @@
 
 ## 🔧 使用技術
 
-* **主要語言**: Python 3.12
+* **主要語言**: Python 3.8+ (推薦 3.12+)
 * **核心函式庫**: UnityPy (用於處理 Unity 遊戲資產)
+* **套件管理**: uv / pip
+* **測試框架**: pytest
 * **打包工具**: PyInstaller
+* **程式碼品質**: black, isort, flake8, mypy
 
+---
+
+## 👨‍💻 For Devs
+
+對於想要參與開發或了解技術細節的開發者，請參閱：
+
+📖 **[開發者指南 (README-DEV.md)](README-DEV.md)**
