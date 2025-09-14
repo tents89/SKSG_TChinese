@@ -255,7 +255,7 @@ def process_title_bundle(env):
         if obj.type.name == "Texture2D":
             try:
                 data = obj.read()
-                if hasattr(data, "m_Name") and data.m_Name.startswith(TARGET_ASSET_NAME):
+                if hasattr(data, "m_Name") and data.m_Name.startswith(TARGET_ASSET_NAME_PREFIX):
                     print(f"  - [紋理] 找到目標 Title Logo: '{data.m_Name}'")
                     if not (data.m_StreamData and data.m_StreamData.path):
                         print("  - [警告] Title Logo 不是 .resS 格式，暫不支援此種替換。")
