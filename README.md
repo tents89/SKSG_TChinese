@@ -21,9 +21,9 @@
     * 將下載的 `.zip` 檔案解壓縮後會得到一個執行檔。
 
 2.  **位置**：
-    * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下**。
+    * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下，或是透過 `--root` 引數手動指定 **
     * **Windows**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
-  
+
     **以下系統不確定是否可以使用**：
     * **macOS**: 通常是 `.../steamapps/common/Hollow Knight Silksong/` (執行檔需放在 `Hollow Knight Silksong.app` 旁邊)
     * **Linux**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
@@ -42,6 +42,15 @@
             ./SilkSong_CHT_mac
             ```
             *(同樣，Linux 用戶請執行 `./SilkSong_CHT_linux`)*
+    * 或是手動指定遊戲根目錄和平台
+      #### 如果你下載的遊戲與當前作業系統不批配，請手動指定 (e.g. 在 SteamDeck 或 Linux/macOS 運行 Windows 版的遊戲)
+        ```bash
+        ./SilkSong_CHT_win --root <遊戲根目錄> --build <平台>
+
+        # 範例
+        ./SilkSong_CHT_win --root ".../steamapps/common/Hollow Knight Silksong/" --build "Windows"
+        ```
+      #### (將 `./SilkSong_CHT_win` 替換為對應名稱)
 
 5.  **依照選單操作**：
     * 執行後會出現功能選單，輸入 `1` 即可開始繁體中文化處理。
@@ -50,9 +59,9 @@
 
 ## ⚠️ 注意
 
-* 本工具會直接修改遊戲檔案，雖然內建備份功能，但如果失效請在Steam重新驗證檔案完整性。
+* 本工具會直接修改遊戲檔案，雖然內建備份功能，但如果失效請在 Steam 重新驗證檔案完整性。
 * 不保證遊戲每次更新都可以使用，但相容性理應極高。
-* 本工具為粉絲製作，與Team Cherry和Unity Technologies皆無關聯。請自行承擔使用風險。
+* 本工具為粉絲製作，與 Team Cherry 和 Unity Technologies 皆無關聯。請自行承擔使用風險。
 
 ---
 
