@@ -1,25 +1,23 @@
-import os
-import sys
-import ctypes
-import traceback
-import json
-import shutil
-import time
 import collections.abc
+import ctypes
+import json
+import os
+import shutil
+import sys
+import time
+import traceback
+from io import BytesIO
 
-# UnityPy and related imports
+import argparse
+import etcpak
 import UnityPy
 import UnityPy.config
+from PIL import Image
 from UnityPy.files import BundleFile, SerializedFile
 from UnityPy.helpers.TypeTreeGenerator import TypeTreeGenerator
 from UnityPy.export import Texture2DConverter
 from UnityPy.streams import EndianBinaryReader
 from UnityPy.enums import ClassIDType, TextureFormat
-import etcpak
-
-# Standard library imports
-from io import BytesIO
-from PIL import Image
 
 # ==============================================================================
 # --- Monkey-Patch for BC7 Compression ---
@@ -74,42 +72,64 @@ class FileWrapper:
 # ==============================================================================
 # --- 1. 全域路徑與設定 ---
 # ==============================================================================
-GAME_ROOT_PATH = os.getcwd()
-PLATFORM_NAME = "未知"
-BUNDLE_FILE_PATH = None
-TEXT_ASSETS_FILE_PATH = None
-TITLE_BUNDLE_PATH = None
+class Config:
+    PLATFORM_NAME: str = "Unknown"
+    GAME_ROOT_PATH: str = os.getcwd()
+    SILKSONG_DATA_PATH: str
+    STREAMING_ASSETS_PLATFORM_PATH: str
+    BUNDLE_FILE_PATH: str
+    TITLE_BUNDLE_PATH: str
+    TEXT_ASSETS_FILE_PATH: str
 
-if sys.platform == "win32":
-    PLATFORM_NAME = "Windows"
-    SILKSONG_DATA_PATH = os.path.join(GAME_ROOT_PATH, "Hollow Knight Silksong_Data")
-    STREAMING_ASSETS_PLATFORM_PATH = os.path.join(SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneWindows64")
-    BUNDLE_FILE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
-    TITLE_BUNDLE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
-    TEXT_ASSETS_FILE_PATH = os.path.join(SILKSONG_DATA_PATH, "resources.assets")
-elif sys.platform == "darwin":
-    PLATFORM_NAME = "macOS"
-    SILKSONG_DATA_PATH = os.path.join(GAME_ROOT_PATH, "Hollow Knight Silksong.app", "Contents", "Resources", "Data")
-    STREAMING_ASSETS_PLATFORM_PATH = os.path.join(SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneOSX")
-    BUNDLE_FILE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
-    TITLE_BUNDLE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
-    TEXT_ASSETS_FILE_PATH = os.path.join(SILKSONG_DATA_PATH, "resources.assets")
-elif sys.platform.startswith("linux"):
-    PLATFORM_NAME = "Linux"
-    SILKSONG_DATA_PATH = os.path.join(GAME_ROOT_PATH, "Hollow Knight Silksong_Data")
-    STREAMING_ASSETS_PLATFORM_PATH = os.path.join(SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneLinux64")
-    BUNDLE_FILE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
-    TITLE_BUNDLE_PATH = os.path.join(STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
-    TEXT_ASSETS_FILE_PATH = os.path.join(SILKSONG_DATA_PATH, "resources.assets")
+    UNITY_VERSION: str = "6000.0.50f1"
+    BACKUP_FOLDER: str
+    BUNDLED_DATA_PATH: str
+    CHT_FOLDER_PATH: str
+    FONT_SOURCE_FOLDER: str
+    PNG_SOURCE_FOLDER: str
+    TEXT_SOURCE_FOLDER: str
+    TEMP_WORKSPACE_FOLDER: str
 
-UNITY_VERSION = "6000.0.50f1"
-BACKUP_FOLDER = os.path.join(GAME_ROOT_PATH, "Backup")
-BUNDLED_DATA_PATH = get_base_path()
-CHT_FOLDER_PATH = os.path.join(BUNDLED_DATA_PATH, "CHT")
-FONT_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Font")
-PNG_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Png")
-TEXT_SOURCE_FOLDER = os.path.join(CHT_FOLDER_PATH, "Text")
-TEMP_WORKSPACE_FOLDER = os.path.join(GAME_ROOT_PATH, "temp_workspace")
+def detect_environment(*, game_build: str = "Unknown"):
+    if game_build != "Unknown":
+        Config.PLATFORM_NAME = game_build
+    else:
+        if sys.platform == "win32":
+            Config.PLATFORM_NAME = "Windows"
+        elif sys.platform == "darwin":
+            Config.PLATFORM_NAME = "macOS"
+        elif sys.platform.startswith("linux"):
+            Config.PLATFORM_NAME = "Linux"
+        else:
+            Config.PLATFORM_NAME = "Unknown"
+
+    if Config.PLATFORM_NAME == "Windows":
+        Config.SILKSONG_DATA_PATH = os.path.join(Config.GAME_ROOT_PATH, "Hollow Knight Silksong_Data")
+        Config.STREAMING_ASSETS_PLATFORM_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneWindows64")
+        Config.BUNDLE_FILE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
+        Config.TITLE_BUNDLE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
+        Config.TEXT_ASSETS_FILE_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "resources.assets")
+    elif Config.PLATFORM_NAME == "macOS":
+        Config.SILKSONG_DATA_PATH = os.path.join(Config.GAME_ROOT_PATH, "Hollow Knight Silksong.app", "Contents", "Resources", "Data")
+        Config.STREAMING_ASSETS_PLATFORM_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneOSX")
+        Config.BUNDLE_FILE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
+        Config.TITLE_BUNDLE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
+        Config.TEXT_ASSETS_FILE_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "resources.assets")
+    elif Config.PLATFORM_NAME == "Linux":
+        Config.SILKSONG_DATA_PATH = os.path.join(Config.GAME_ROOT_PATH, "Hollow Knight Silksong_Data")
+        Config.STREAMING_ASSETS_PLATFORM_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "StreamingAssets", "aa", "StandaloneLinux64")
+        Config.BUNDLE_FILE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "fonts_assets_chinese.bundle")
+        Config.TITLE_BUNDLE_PATH = os.path.join(Config.STREAMING_ASSETS_PLATFORM_PATH, "atlases_assets_assets", "sprites", "_atlases", "title.spriteatlas.bundle")
+        Config.TEXT_ASSETS_FILE_PATH = os.path.join(Config.SILKSONG_DATA_PATH, "resources.assets")
+
+    Config.BACKUP_FOLDER = os.path.join(Config.GAME_ROOT_PATH, "Backup")
+    Config.BUNDLED_DATA_PATH = get_base_path()
+    Config.CHT_FOLDER_PATH = os.path.join(Config.BUNDLED_DATA_PATH, "CHT")
+    Config.FONT_SOURCE_FOLDER = os.path.join(Config.CHT_FOLDER_PATH, "Font")
+    Config.PNG_SOURCE_FOLDER = os.path.join(Config.CHT_FOLDER_PATH, "Png")
+    Config.TEXT_SOURCE_FOLDER = os.path.join(Config.CHT_FOLDER_PATH, "Text")
+    Config.TEMP_WORKSPACE_FOLDER = os.path.join(Config.GAME_ROOT_PATH, "temp_workspace")
+
 
 # ==============================================================================
 # --- 輔助函數 ---
@@ -122,11 +142,11 @@ def sanitize_filename(name):
 # ==============================================================================
 def run_modding():
     print("\n[開始執行修改流程]")
-    paths_to_check = [BUNDLE_FILE_PATH, TEXT_ASSETS_FILE_PATH, TITLE_BUNDLE_PATH, CHT_FOLDER_PATH]
+    paths_to_check = [Config.BUNDLE_FILE_PATH, Config.TEXT_ASSETS_FILE_PATH, Config.TITLE_BUNDLE_PATH, Config.CHT_FOLDER_PATH]
     for path in paths_to_check:
         if not path or not os.path.exists(path):
             print(f"\n[錯誤] 關鍵路徑或檔案不存在: {path}")
-            print(f"請確保此程式位於遊戲根目錄下，且 {PLATFORM_NAME} 版本的遊戲檔案完整。")
+            print(f"請確保此程式位於遊戲根目錄下，且 {Config.PLATFORM_NAME} 版本的遊戲檔案完整。")
             return
 
     print("\n[警告] 此操作將直接修改遊戲檔案。")
@@ -136,46 +156,46 @@ def run_modding():
         return
 
     try:
-        if os.path.exists(BACKUP_FOLDER):
+        if os.path.exists(Config.BACKUP_FOLDER):
             print("\n[步驟 1/4] 偵測到舊的備份資料夾，正在移除...")
-            shutil.rmtree(BACKUP_FOLDER)
+            shutil.rmtree(Config.BACKUP_FOLDER)
             print("舊備份已移除。")
 
         print("\n[步驟 1/4] 正在建立新的原始檔案備份...")
-        backup_bundle_target = os.path.join(BACKUP_FOLDER, os.path.relpath(BUNDLE_FILE_PATH, GAME_ROOT_PATH))
-        backup_assets_target = os.path.join(BACKUP_FOLDER, os.path.relpath(TEXT_ASSETS_FILE_PATH, GAME_ROOT_PATH))
-        backup_title_target = os.path.join(BACKUP_FOLDER, os.path.relpath(TITLE_BUNDLE_PATH, GAME_ROOT_PATH))
+        backup_bundle_target = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.BUNDLE_FILE_PATH, Config.GAME_ROOT_PATH))
+        backup_assets_target = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.TEXT_ASSETS_FILE_PATH, Config.GAME_ROOT_PATH))
+        backup_title_target = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.TITLE_BUNDLE_PATH, Config.GAME_ROOT_PATH))
         os.makedirs(os.path.dirname(backup_bundle_target), exist_ok=True)
         os.makedirs(os.path.dirname(backup_assets_target), exist_ok=True)
         os.makedirs(os.path.dirname(backup_title_target), exist_ok=True)
-        shutil.copy2(BUNDLE_FILE_PATH, backup_bundle_target)
-        shutil.copy2(TEXT_ASSETS_FILE_PATH, backup_assets_target)
-        shutil.copy2(TITLE_BUNDLE_PATH, backup_title_target)
+        shutil.copy2(Config.BUNDLE_FILE_PATH, backup_bundle_target)
+        shutil.copy2(Config.TEXT_ASSETS_FILE_PATH, backup_assets_target)
+        shutil.copy2(Config.TITLE_BUNDLE_PATH, backup_title_target)
         print("新備份已建立至 'Backup' 資料夾。")
 
         # 載入與修改資源
         print("\n[步驟 2/4] 正在載入資源並應用修改...")
-        if os.path.exists(TEMP_WORKSPACE_FOLDER): shutil.rmtree(TEMP_WORKSPACE_FOLDER)
-        os.makedirs(TEMP_WORKSPACE_FOLDER, exist_ok=True)
-        if UNITY_VERSION: UnityPy.config.FALLBACK_UNITY_VERSION = UNITY_VERSION
+        if os.path.exists(Config.TEMP_WORKSPACE_FOLDER): shutil.rmtree(Config.TEMP_WORKSPACE_FOLDER)
+        os.makedirs(Config.TEMP_WORKSPACE_FOLDER, exist_ok=True)
+        if Config.UNITY_VERSION: UnityPy.config.FALLBACK_UNITY_VERSION = Config.UNITY_VERSION
 
         # --- Mac版修正點 ---
-        generator = TypeTreeGenerator(UNITY_VERSION)
+        generator = TypeTreeGenerator(Config.UNITY_VERSION)
 
         # 根據平台使用不同的載入方法
         if sys.platform == "darwin": # macOS
             print("[資訊] 偵測到 macOS，使用 DLL 資料夾模式載入 TypeTreeGenerator...")
             # 構建到 Managed 資料夾的精確路徑
-            managed_folder_path = os.path.join(SILKSONG_DATA_PATH, "Managed")
+            managed_folder_path = os.path.join(Config.SILKSONG_DATA_PATH, "Managed")
             generator.load_local_dll_folder(managed_folder_path)
         else: # Windows and Linux
-            generator.load_local_game(GAME_ROOT_PATH)
+            generator.load_local_game(Config.GAME_ROOT_PATH)
 
         #
-        bundle_env = UnityPy.load(BUNDLE_FILE_PATH)
+        bundle_env = UnityPy.load(Config.BUNDLE_FILE_PATH)
         bundle_env.typetree_generator = generator
-        text_env = UnityPy.load(TEXT_ASSETS_FILE_PATH)
-        title_env = UnityPy.load(TITLE_BUNDLE_PATH)
+        text_env = UnityPy.load(Config.TEXT_ASSETS_FILE_PATH)
+        title_env = UnityPy.load(Config.TITLE_BUNDLE_PATH)
         title_env.typetree_generator = generator
 
         process_bundle(bundle_env)
@@ -185,18 +205,18 @@ def run_modding():
 
         # ... (重新打包和覆蓋檔案的程式碼保持不變) ...
         print("\n[步驟 3/4] 正在重新打包修改後的檔案...")
-        modified_bundle_path = os.path.join(TEMP_WORKSPACE_FOLDER, os.path.basename(BUNDLE_FILE_PATH))
-        modified_text_assets_path = os.path.join(TEMP_WORKSPACE_FOLDER, os.path.basename(TEXT_ASSETS_FILE_PATH))
-        modified_title_bundle_path = os.path.join(TEMP_WORKSPACE_FOLDER, os.path.basename(TITLE_BUNDLE_PATH))
+        modified_bundle_path = os.path.join(Config.TEMP_WORKSPACE_FOLDER, os.path.basename(Config.BUNDLE_FILE_PATH))
+        modified_text_assets_path = os.path.join(Config.TEMP_WORKSPACE_FOLDER, os.path.basename(Config.TEXT_ASSETS_FILE_PATH))
+        modified_title_bundle_path = os.path.join(Config.TEMP_WORKSPACE_FOLDER, os.path.basename(Config.TITLE_BUNDLE_PATH))
         with open(modified_bundle_path, "wb") as f: f.write(bundle_env.file.save())
         with open(modified_text_assets_path, "wb") as f: f.write(text_env.file.save())
         with open(modified_title_bundle_path, "wb") as f: f.write(title_env.file.save())
         print("打包完成。")
 
         print("\n[步驟 4/4] 正在用新檔案覆蓋遊戲檔案...")
-        shutil.move(modified_bundle_path, BUNDLE_FILE_PATH)
-        shutil.move(modified_text_assets_path, TEXT_ASSETS_FILE_PATH)
-        shutil.move(modified_title_bundle_path, TITLE_BUNDLE_PATH)
+        shutil.move(modified_bundle_path, Config.BUNDLE_FILE_PATH)
+        shutil.move(modified_text_assets_path, Config.TEXT_ASSETS_FILE_PATH)
+        shutil.move(modified_title_bundle_path, Config.TITLE_BUNDLE_PATH)
         print("覆蓋完成！")
         print("\n== 所有操作已成功完成！==")
 
@@ -204,25 +224,25 @@ def run_modding():
         print(f"\n[嚴重錯誤] 操作過程中發生錯誤: {e}")
         traceback.print_exc()
     finally:
-        if os.path.exists(TEMP_WORKSPACE_FOLDER): shutil.rmtree(TEMP_WORKSPACE_FOLDER)
+        if os.path.exists(Config.TEMP_WORKSPACE_FOLDER): shutil.rmtree(Config.TEMP_WORKSPACE_FOLDER)
 
 def restore_backup():
     # ... (此函式無需改動)
     print("\n[開始執行還原備份流程]")
-    if not os.path.exists(BACKUP_FOLDER):
+    if not os.path.exists(Config.BACKUP_FOLDER):
         print("[錯誤] 找不到 'Backup' 資料夾，無法還原。")
         return
     try:
-        backup_bundle = os.path.join(BACKUP_FOLDER, os.path.relpath(BUNDLE_FILE_PATH, GAME_ROOT_PATH))
-        backup_assets = os.path.join(BACKUP_FOLDER, os.path.relpath(TEXT_ASSETS_FILE_PATH, GAME_ROOT_PATH))
-        backup_title = os.path.join(BACKUP_FOLDER, os.path.relpath(TITLE_BUNDLE_PATH, GAME_ROOT_PATH))
+        backup_bundle = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.BUNDLE_FILE_PATH, Config.GAME_ROOT_PATH))
+        backup_assets = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.TEXT_ASSETS_FILE_PATH, Config.GAME_ROOT_PATH))
+        backup_title = os.path.join(Config.BACKUP_FOLDER, os.path.relpath(Config.TITLE_BUNDLE_PATH, Config.GAME_ROOT_PATH))
         if not os.path.exists(backup_bundle) or not os.path.exists(backup_assets) or not os.path.exists(backup_title):
             print("[錯誤] 備份資料夾中檔案不完整，無法還原。")
             return
         print("正在從 'Backup' 資料夾還原原始檔案...")
-        shutil.copy2(backup_bundle, BUNDLE_FILE_PATH)
-        shutil.copy2(backup_assets, TEXT_ASSETS_FILE_PATH)
-        shutil.copy2(backup_title, TITLE_BUNDLE_PATH)
+        shutil.copy2(backup_bundle, Config.BUNDLE_FILE_PATH)
+        shutil.copy2(backup_assets, Config.TEXT_ASSETS_FILE_PATH)
+        shutil.copy2(backup_title, Config.TITLE_BUNDLE_PATH)
         print("\n== 檔案已成功還原！==")
     except Exception as e:
         print(f"\n[嚴重錯誤] 還原過程中發生錯誤: {e}")
@@ -247,7 +267,7 @@ def process_title_bundle(env):
     print("[資訊] 開始處理 Title Bundle...")
     TARGET_ASSET_NAME_PREFIX = "sactx-0-1024x1024-BC7-Title-"
     SOURCE_PNG_NAME = "logo.png"
-    source_png_path = os.path.join(PNG_SOURCE_FOLDER, SOURCE_PNG_NAME)
+    source_png_path = os.path.join(Config.PNG_SOURCE_FOLDER, SOURCE_PNG_NAME)
     if not os.path.exists(source_png_path):
         print(f"  - [警告] 找不到源文件 '{SOURCE_PNG_NAME}'，跳過 Title Logo 替換。")
         return
@@ -290,7 +310,7 @@ def process_font(obj_reader):
         data = obj_reader.read()
         asset_name = data.m_Name
         source_asset_name = "chinese_body_bold" if asset_name == "do_not_use_chinese_body_bold" else asset_name
-        source_json_path = os.path.join(FONT_SOURCE_FOLDER, f"{source_asset_name}.json")
+        source_json_path = os.path.join(Config.FONT_SOURCE_FOLDER, f"{source_asset_name}.json")
         if os.path.exists(source_json_path):
             original_tree = obj_reader.read_typetree()
             with open(source_json_path, "r", encoding="utf-8") as f:
@@ -359,7 +379,7 @@ def process_embedded_texture(data):
         asset_name = data.m_Name
         source_asset_name = "chinese_body_bold Atlas" if asset_name == "do_not_use_chinese_body_bold Atlas" else asset_name
         safe_name = sanitize_filename(source_asset_name)
-        source_png_path = os.path.join(PNG_SOURCE_FOLDER, f"{safe_name}.png")
+        source_png_path = os.path.join(Config.PNG_SOURCE_FOLDER, f"{safe_name}.png")
         if os.path.exists(source_png_path):
             with Image.open(source_png_path) as img:
                 data.image = img
@@ -383,7 +403,7 @@ def process_ress_texture_group(texture_group):
             asset_name = tex_data.m_Name
             source_asset_name = "chinese_body_bold Atlas" if asset_name == "do_not_use_chinese_body_bold Atlas" else asset_name
             safe_name = sanitize_filename(source_asset_name)
-            source_png_path = os.path.join(PNG_SOURCE_FOLDER, f"{safe_name}.png")
+            source_png_path = os.path.join(Config.PNG_SOURCE_FOLDER, f"{safe_name}.png")
             if os.path.exists(source_png_path):
                 with Image.open(source_png_path) as img:
                     image_binary, new_format = Texture2DConverter.image_to_texture2d(img, tex_data.m_TextureFormat, tex_data.assets_file.target_platform)
@@ -473,7 +493,7 @@ def process_text_assets(env):
         if obj.type.name == "TextAsset":
             data = obj.read()
             if data and data.m_Name in text_target_assets:
-                source_txt_path = os.path.join(TEXT_SOURCE_FOLDER, f"{data.m_Name}.txt")
+                source_txt_path = os.path.join(Config.TEXT_SOURCE_FOLDER, f"{data.m_Name}.txt")
                 if os.path.exists(source_txt_path):
                     with open(source_txt_path, "rb") as f:
                         local_bytes = f.read()
@@ -483,18 +503,47 @@ def process_text_assets(env):
 # ==============================================================================
 # --- 主程式入口 ---
 # ==============================================================================
-def main_menu():
-    # ... (此函式無需改動)
+def main():
+    is_packaged = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+    if sys.platform == 'win32' and is_packaged and not is_admin():
+        print("偵測到需要管理員權限，正在嘗試重新啟動...")
+        run_as_admin()
+        sys.exit(0)
+    if sys.platform == 'win32' and not is_packaged and not is_admin():
+        print("\n" + "="*60)
+        print("== [開發者警告] ==")
+        print("偵測到腳本未以管理員權限執行。")
+        print("部分檔案操作 (如覆蓋遊戲檔案) 可能會失敗。")
+        print("="*60 + "\n")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--build", default="Windows", required=False)
+    parser.add_argument("--root", required=False)
+    args = parser.parse_args()
+
+    if args.root:
+        Config.GAME_ROOT_PATH = args.root
+    else:
+        Config.GAME_ROOT_PATH = os.getcwd()
+
+    if args.build:
+        detect_environment(game_build=args.build)
+    else:
+        detect_environment()
+
     while True:
-        if sys.platform == 'win32': os.system('cls')
+        if sys.platform == 'win32':
+            os.system('cls')
+        elif sys.platform == 'darwin' or sys.platform.startswith("linux"):
+            os.system('clear')
 
         print("="*60)
         print("== 絲綢之歌繁體中文化工具 v1.2 ==") # 版本號更新
         print("="*60)
-        print(f"作業系統: {PLATFORM_NAME}")
-        print(f"遊戲目錄: {GAME_ROOT_PATH}")
+        print(f"作業系統: {Config.PLATFORM_NAME}")
+        print(f"遊戲目錄: {Config.GAME_ROOT_PATH}")
 
-        if not BUNDLE_FILE_PATH:
+        if not Config.BUNDLE_FILE_PATH:
             print(f"\n[錯誤] 不支援的作業系統 ({sys.platform})。")
             input("\n按下 Enter 鍵退出...")
             return
@@ -522,16 +571,4 @@ def main_menu():
         input("\n按下 Enter 鍵返回主選單...")
 
 if __name__ == "__main__":
-    # ... (此函式無需改動)
-    is_packaged = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
-    if sys.platform == 'win32' and is_packaged and not is_admin():
-        print("偵測到需要管理員權限，正在嘗試重新啟動...")
-        run_as_admin()
-        sys.exit(0)
-    if sys.platform == 'win32' and not is_packaged and not is_admin():
-        print("\n" + "="*60)
-        print("== [開發者警告] ==")
-        print("偵測到腳本未以管理員權限執行。")
-        print("部分檔案操作 (如覆蓋遊戲檔案) 可能會失敗。")
-        print("="*60 + "\n")
-    main_menu()
+    main()
