@@ -42,8 +42,9 @@ def is_admin():
 
 def run_as_admin():
     if sys.platform == 'win32':
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-
+        # 只傳遞腳本名稱之後的參數
+        params = " ".join(sys.argv[1:])
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
 def get_base_path():
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         return sys._MEIPASS
