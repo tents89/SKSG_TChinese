@@ -36,15 +36,7 @@ print("[資訊] 補丁應用成功。")
 # ==============================================================================
 # --- 0. 執行環境與權限檢查 ---
 # ==============================================================================
-def is_admin():
-    try: return ctypes.windll.shell32.IsUserAnAdmin()
-    except: return False
 
-def run_as_admin():
-    if sys.platform == 'win32':
-        # 只傳遞腳本名稱之後的參數
-        params = " ".join(sys.argv[1:])
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, params, None, 1)
 def get_base_path():
     if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         return sys._MEIPASS
@@ -505,18 +497,6 @@ def process_text_assets(env):
 # --- 主程式入口 ---
 # ==============================================================================
 def main():
-    is_packaged = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
-    if sys.platform == 'win32' and is_packaged and not is_admin():
-        print("偵測到需要管理員權限，正在嘗試重新啟動...")
-        run_as_admin()
-        sys.exit(0)
-    if sys.platform == 'win32' and not is_packaged and not is_admin():
-        print("\n" + "="*60)
-        print("== [開發者警告] ==")
-        print("偵測到腳本未以管理員權限執行。")
-        print("部分檔案操作 (如覆蓋遊戲檔案) 可能會失敗。")
-        print("="*60 + "\n")
-
     parser = argparse.ArgumentParser()
     parser.add_argument("--build", default="Windows", required=False)
     parser.add_argument("--root", required=False)
@@ -543,7 +523,8 @@ def main():
         print("="*60)
         print(f"作業系統: {Config.PLATFORM_NAME}")
         print(f"遊戲目錄: {Config.GAME_ROOT_PATH}")
-
+        print("如果失敗請對此程式檔案點擊右鍵，並選擇「以系統管理員身分執行」。")
+        
         if not Config.BUNDLE_FILE_PATH:
             print(f"\n[錯誤] 不支援的作業系統 ({sys.platform})。")
             input("\n按下 Enter 鍵退出...")
