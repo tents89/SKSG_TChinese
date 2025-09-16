@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: '要發布的版本號 (例如 v1.0.1)'
+        description: '發布的版本號 (例如 v1.0.1)'
         required: true
         default: 'v1.0.0'
+      release_notes:
+        description: '更新內容'
+        required: true
+        default: '更新工具邏輯。'
 
 jobs:
   build:
@@ -81,7 +85,7 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
-          body: 更新補丁邏輯 使用前請使用舊版還原備份 以確保沒有問題。
+          body: ${{ github.event.inputs.release_notes }}
           files: |
             dist/SilkSong_CHT-Windows.zip
             dist/SilkSong_CHT-macOS.zip
