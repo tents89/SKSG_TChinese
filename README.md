@@ -4,7 +4,7 @@
 
 遊戲更新後請嘗試重新執行一次此工具。
 
-![image](https://github.com/tents89/SKSO_TChinese/blob/main/Tool.png)
+![image](https://github.com/tents89/SKSG_TChinese/blob/main/Tool.png)
 > **本工具的核心邏輯與程式碼均由 AI 構建，並使用 Python 與 UnityPy 技術實現。**
 
 ---
@@ -13,7 +13,7 @@
 
 ### 下載
 
-請前往 **[Releases 頁面](https://github.com/tents89/SKSO_TChinese/releases)** 下載對應你作業系統的最新版本壓縮包。
+請前往 **[Releases 頁面](https://github.com/tents89/SKSG_TChinese/releases)** 下載對應你作業系統的最新版本壓縮包。
 
 ### 步驟
 
@@ -22,9 +22,10 @@
 
 2.  **位置**：
     * **非常重要**：請將解壓縮後的執行檔**移動到你的《Hollow Knight: Silksong》遊戲根目錄下，或是透過 `--root` 引數手動指定 **
-    * **Windows**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
+    * **Windows**:
+        * **Steam**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
+        * **Game Pass**: 通常類似 `.../XboxGames/Hollow Knight Silksong/Content/` (需放在遊戲安裝目錄下的 `Content` 資料夾內)
 
-    **以下系統不確定是否可以使用**：
     * **macOS**: 通常是 `.../steamapps/common/Hollow Knight Silksong/` (執行檔需放在 `Hollow Knight Silksong.app` 旁邊)
     * **Linux**: 通常是 `.../steamapps/common/Hollow Knight Silksong/`
 
