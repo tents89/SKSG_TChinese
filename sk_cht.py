@@ -133,7 +133,7 @@ def sanitize_filename(name):
 # ==============================================================================
 # --- 選單功能 ---
 # ==============================================================================
-def run_modding():
+def run_modding(text_folder_name: str):
     print("\n[開始執行修改流程]")
     paths_to_check = [Config.BUNDLE_FILE_PATH, Config.TEXT_ASSETS_FILE_PATH, Config.TITLE_BUNDLE_PATH, Config.CHT_FOLDER_PATH]
     for path in paths_to_check:
@@ -192,7 +192,7 @@ def run_modding():
         title_env.typetree_generator = generator
 
         process_bundle(bundle_env)
-        process_text_assets(text_env)
+        process_text_assets(text_env, text_folder_name)
         process_title_bundle(title_env)
         print("資源修改完成。")
 
@@ -384,7 +384,7 @@ def process_embedded_texture(data):
         print(f"  - [警告] 處理內嵌紋理 '{data.m_Name}' 時出錯: {e}")
 
 def process_ress_texture_group(texture_group):
-    # ... (此函式無需改動)
+
     if not texture_group: return
     first_texture = texture_group[0]
     resS_path = os.path.basename(first_texture.m_StreamData.path)
@@ -432,7 +432,7 @@ def process_ress_texture_group(texture_group):
         traceback.print_exc()
 
 def process_bundle(env):
-    # ... (此函式無需改動)
+    
     print("[資訊] 正在分析與分類所有資源...")
     all_objects = []
     def find_all_objects(container):
@@ -479,14 +479,19 @@ def process_bundle(env):
     for mat_data in materials_to_process:
         process_material(mat_data.object_reader)
 
-def process_text_assets(env):
-    # ... (此函式無需改動)
+def process_text_assets(env, text_folder_name: str):
+    """處理 resources.assets 中的文本替換"""
+    # 動態構建文本來源路徑
+    current_text_source_folder = os.path.join(Config.CHT_FOLDER_PATH, text_folder_name)
+
     text_target_assets = {"ZH_Achievements", "ZH_AutoSaveNames", "ZH_Belltown", "ZH_Bonebottom", "ZH_Caravan", "ZH_City", "ZH_Coral", "ZH_Crawl", "ZH_Credits List", "ZH_Deprecated", "ZH_Dust", "ZH_Enclave", "ZH_Error", "ZH_Fast Travel", "ZH_Forge", "ZH_General", "ZH_Greymoor", "ZH_Inspect", "ZH_Journal", "ZH_Lore", "ZH_MainMenu", "ZH_Map Zones", "ZH_Peak", "ZH_Pilgrims", "ZH_Prompts", "ZH_Quests", "ZH_Shellwood", "ZH_Shop", "ZH_Song", "ZH_Titles", "ZH_Tools", "ZH_UI", "ZH_Under", "ZH_Wanderers", "ZH_Weave", "ZH_Wilds"}
+    
     for obj in env.objects:
         if obj.type.name == "TextAsset":
             data = obj.read()
             if data and data.m_Name in text_target_assets:
-                source_txt_path = os.path.join(Config.TEXT_SOURCE_FOLDER, f"{data.m_Name}.txt")
+                # 使用動態構建的路徑
+                source_txt_path = os.path.join(current_text_source_folder, f"{data.m_Name}.txt")
                 if os.path.exists(source_txt_path):
                     with open(source_txt_path, "rb") as f:
                         local_bytes = f.read()
@@ -531,17 +536,26 @@ def main():
             return
 
         print("\n請選擇要執行的操作：\n")
-        print("  1. 進行繁體中文化")
-        print("  2. 還原備份")
-        print("  3. 關於")
-        print("  4. 退出\n")
+        print("  1. 繁體中文化 (官方簡中)")
+        print("  2. 繁體中文化 (繁體社群重譯(WIP))")
+        print("  3. 繁體中文化 (修車組中譯中)")
+        print("  4. 還原備份")
+        print("  5. 關於")
+        print("  6. 退出\n")
 
-        choice = input("請輸入選項 [1-4]: ").strip()
+        choice = input("請輸入選項 [1-6]: ").strip()
 
-        if choice == '1': run_modding()
-        elif choice == '2': restore_backup()
-        elif choice == '3': show_about()
+        if choice == '1':
+            run_modding(text_folder_name="Text")
+        elif choice == '2':
+            run_modding(text_folder_name="Text_Re")
+        elif choice == '3':
+            run_modding(text_folder_name="Text_Chs")
         elif choice == '4':
+            restore_backup()
+        elif choice == '5':
+            show_about()
+        elif choice == '6':
             print("程式即將退出。")
             time.sleep(1)
             break
