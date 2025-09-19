@@ -84,9 +84,11 @@ class Config:
     TEMP_WORKSPACE_FOLDER: str
 
 def detect_environment(*, game_build: str = "Unknown"):
-    if game_build != "Unknown":
+    
+    if game_build in ["Windows", "Linux", "macOS"]:
         Config.PLATFORM_NAME = game_build
     else:
+        # 自動偵測邏輯保持不變os.platform == "win32":
         if sys.platform == "win32":
             Config.PLATFORM_NAME = "Windows"
         elif sys.platform == "darwin":
@@ -143,7 +145,7 @@ def run_modding(text_folder_name: str):
             return
 
     print("\n[警告] 此操作將直接修改遊戲檔案。")
-    confirm = input("您是否要繼續執行？ (輸入 'y' 確認): ").strip().lower()
+    confirm = input("您是否要繼續執行？ (輸入 'y' 確認): ").strip().lower() 
     if confirm != 'y':
         print("操作已取消。")
         return
@@ -503,37 +505,45 @@ def process_text_assets(env, text_folder_name: str):
 # ==============================================================================
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--build", default="Windows", required=False)
-    parser.add_argument("--root", required=False)
+    parser.add_argument("--build", help="The target platform (Windows, Linux, macOS)", required=False)
+    parser.add_argument("--root", help="The root directory of the game", required=False)
     args = parser.parse_args()
 
     if args.root:
         Config.GAME_ROOT_PATH = args.root
-    else:
-        Config.GAME_ROOT_PATH = os.getcwd()
-
+        
+    initial_build_target = "Unknown"
     if args.build:
-        detect_environment(game_build=args.build)
-    else:
-        detect_environment()
+        # 只在這裡處理來自命令列的、不規範的輸入
+        build_arg_lower = args.build.lower()
+        if build_arg_lower == "windows":
+            initial_build_target = "Windows"
+        elif build_arg_lower == "linux":
+            initial_build_target = "Linux"
+        elif build_arg_lower == "macos":
+            initial_build_target = "macOS"
+        else:
+            print(f"[Warning] 無效的 --build 參數 '{args.build}'。本次將進行自動偵測。")
+            time.sleep(3)
 
+    # 執行首次平台偵測
+    detect_environment(game_build=initial_build_target)
+    
     while True:
         if sys.platform == 'win32':
             os.system('cls')
-        elif sys.platform == 'darwin' or sys.platform.startswith("linux"):
-            os.system('clear')
+        else: os.system('clear')
 
         print("="*60)
-        print("== 絲綢之歌繁體中文化工具 v1.2 ==") # 版本號更新
+        print("== 絲綢之歌繁體中文化工具 v1.2 ==")
         print("="*60)
-        print(f"作業系統: {Config.PLATFORM_NAME}")
+        print(f"目前平台: {Config.PLATFORM_NAME} (輸入 'T' 可手動切換)")
         print(f"遊戲目錄: {Config.GAME_ROOT_PATH}")
         print("如果失敗請對此程式檔案點擊右鍵，並選擇「以系統管理員身分執行」。")
         
-        if not Config.BUNDLE_FILE_PATH:
-            print(f"\n[錯誤] 不支援的作業系統 ({sys.platform})。")
-            input("\n按下 Enter 鍵退出...")
-            return
+        if not Config.BUNDLE_FILE_PATH or not os.path.exists(Config.BUNDLE_FILE_PATH):
+             print(f"\n[警告] 無法根據當前平台 '{Config.PLATFORM_NAME}' 找到遊戲檔案。")
+             print(f"請確認遊戲目錄是否正確，或嘗試手動切換平台。")
 
         print("\n請選擇要執行的操作：\n")
         print("  1. 繁體中文化 (官方簡中)")
@@ -543,7 +553,7 @@ def main():
         print("  5. 關於")
         print("  6. 退出\n")
 
-        choice = input("請輸入選項 [1-6]: ").strip()
+        choice = input(f"請輸入選項 [1-6] 或 T 切換平台: ").strip().lower()
 
         if choice == '1':
             run_modding(text_folder_name="Text")
@@ -559,6 +569,30 @@ def main():
             print("程式即將退出。")
             time.sleep(1)
             break
+        elif choice == 't':
+            print("\n--- 手動切換平台 ---")
+            print("  1. Windows")
+            print("  2. Linux")
+            print("  3. macOS")
+            platform_choice = input("請選擇新平台 [1-3]: ").strip()
+
+            new_platform = ""
+            if platform_choice == '1':
+                new_platform = "Windows"
+            elif platform_choice == '2':
+                new_platform = "Linux"
+            elif platform_choice == '3':
+                new_platform = "macOS"
+            else:
+                print("\n無效的選項，取消切換。")
+                time.sleep(1)
+                continue # 直接回到主選單
+
+            # 呼叫 detect_environment 來重新計算所有路徑
+            detect_environment(game_build=new_platform)
+            print(f"\n平台已切換至: {Config.PLATFORM_NAME}。即將重新載入選單...")
+            time.sleep(1)
+            continue
         else:
             print("\n無效的指令，請重新輸入。")
             time.sleep(1)
