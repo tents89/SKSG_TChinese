@@ -68,20 +68,22 @@ class FileWrapper:
 class Config:
     PLATFORM_NAME: str = "Unknown"
     GAME_ROOT_PATH: str = os.getcwd()
-    SILKSONG_DATA_PATH: str
-    STREAMING_ASSETS_PLATFORM_PATH: str
-    BUNDLE_FILE_PATH: str
-    TITLE_BUNDLE_PATH: str
-    TEXT_ASSETS_FILE_PATH: str
+    
+    # --- 這裡是唯一的修改點：為所有路徑屬性提供初始值 ---
+    SILKSONG_DATA_PATH: str = ""
+    STREAMING_ASSETS_PLATFORM_PATH: str = ""
+    BUNDLE_FILE_PATH: str = ""
+    TITLE_BUNDLE_PATH: str = ""
+    TEXT_ASSETS_FILE_PATH: str = ""
 
     UNITY_VERSION: str = "6000.0.50f1"
-    BACKUP_FOLDER: str
-    BUNDLED_DATA_PATH: str
-    CHT_FOLDER_PATH: str
-    FONT_SOURCE_FOLDER: str
-    PNG_SOURCE_FOLDER: str
-    TEXT_SOURCE_FOLDER: str
-    TEMP_WORKSPACE_FOLDER: str
+    BACKUP_FOLDER: str = ""
+    BUNDLED_DATA_PATH: str = ""
+    CHT_FOLDER_PATH: str = ""
+    FONT_SOURCE_FOLDER: str = ""
+    PNG_SOURCE_FOLDER: str = ""
+    TEXT_SOURCE_FOLDER: str = ""
+    TEMP_WORKSPACE_FOLDER: str = ""
 
 def detect_environment(*, game_build: str = "Unknown"):
     
