@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.8"
 resolution-markers = [
     "python_full_version >= '3.10'",
@@ -659,7 +659,7 @@ resolution-markers = [
     "python_full_version == '3.9.*'",
 ]
 dependencies = [
-    { name = "zipp", version = "3.23.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "zipp", version = "3.23.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/76/66/650a33bd90f786193e4de4b3ad86ea60b53c89b669a5c7be931fac31cdb0/importlib_metadata-8.7.0.tar.gz", hash = "sha256:d13b81ad223b890aa16c5471f2ac3056cf76c5f10f82d6f9292f0b415f389000", size = 56641, upload-time = "2025-04-27T15:29:01.736Z" }
 wheels = [
@@ -1486,6 +1486,10 @@ dependencies = [
     { name = "etcpak" },
     { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pillow", version = "11.3.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pyinstaller" },
+    { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest", version = "8.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "typetreegeneratorapi" },
     { name = "unitypy" },
 ]
 
@@ -1517,9 +1521,12 @@ requires-dist = [
     { name = "isort", marker = "extra == 'dev'", specifier = ">=5.10.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=0.900" },
     { name = "pillow", specifier = ">=9.0.0" },
+    { name = "pyinstaller", specifier = ">=6.15.0" },
     { name = "pyinstaller", marker = "extra == 'build'", specifier = ">=5.0.0" },
+    { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0.0" },
+    { name = "typetreegeneratorapi", specifier = ">=0.0.6" },
     { name = "unitypy", specifier = ">=1.9.0" },
 ]
 provides-extras = ["dev", "build"]
@@ -1603,6 +1610,23 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5b/b9/1ed31d167be802da0fc95020d04cd27b7d7065cc6fbefdd2f9186f60d7bd/tomli-2.2.1-cp313-cp313-win32.whl", hash = "sha256:d3f5614314d758649ab2ab3a62d4f2004c825922f9e370b29416484086b264ec", size = 98724, upload-time = "2024-11-27T22:38:32.837Z" },
     { url = "https://files.pythonhosted.org/packages/c7/32/b0963458706accd9afcfeb867c0f9175a741bf7b19cd424230714d722198/tomli-2.2.1-cp313-cp313-win_amd64.whl", hash = "sha256:a38aa0308e754b0e3c67e344754dff64999ff9b513e691d0e786265c93583c69", size = 109383, upload-time = "2024-11-27T22:38:34.455Z" },
     { url = "https://files.pythonhosted.org/packages/6e/c2/61d3e0f47e2b74ef40a68b9e6ad5984f6241a942f7cd3bbfbdbd03861ea9/tomli-2.2.1-py3-none-any.whl", hash = "sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc", size = 14257, upload-time = "2024-11-27T22:38:35.385Z" },
+]
+
+[[package]]
+name = "typetreegeneratorapi"
+version = "0.0.6"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/97/d1/13fa25fe0055bc055ea2ba1411e59f307e02534d55212a16c3dd24e2cc6b/typetreegeneratorapi-0.0.6-cp36-abi3-macosx_11_0_arm64.whl", hash = "sha256:6b6bcb8b824054c7772b147f0091f86a98c6c5c2575263ad82dbf4693d5d09c7", size = 8278151, upload-time = "2025-06-06T11:41:28.509Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/a2/0b46fb6fe208b62677ce20c4e512e51157ad24055c386cb17d381cbf45f7/typetreegeneratorapi-0.0.6-cp36-abi3-macosx_11_0_x86_64.whl", hash = "sha256:b5d831c909b6224c9020fc85c5262ce8addd3495be07deeb84551d4f20a4d848", size = 8537359, upload-time = "2025-06-06T11:41:30.512Z" },
+    { url = "https://files.pythonhosted.org/packages/5f/1f/057298e1ad9c5b37906e5f7e43ca118f40d95aae212f768838d95fb99f24/typetreegeneratorapi-0.0.6-cp36-abi3-manylinux2014_aarch64.whl", hash = "sha256:e56a53ec4ad006e8f2c6cd4353b6e70aa0b0fb710a3f11e5f884c7766c344ca4", size = 8301316, upload-time = "2025-06-06T11:41:33.11Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/67/3879ccac381cb53440848e508982e57a5bc5c994e55d180cb43863520aa6/typetreegeneratorapi-0.0.6-cp36-abi3-manylinux2014_armv7l.whl", hash = "sha256:d3b6e1a675190f2035b9da86e637245877e755bbd5c99c1b05914567840d6fc6", size = 8027238, upload-time = "2025-06-06T11:41:35.441Z" },
+    { url = "https://files.pythonhosted.org/packages/4d/fb/15fcec2b96dbf033cb936803e88e7320f4e2e42f97c3fdcafc90247f093d/typetreegeneratorapi-0.0.6-cp36-abi3-manylinux2014_x86_64.whl", hash = "sha256:9ce27e85fbdcea35e79d1685a429f89c543e0afa5e9774398b6433776418f4a0", size = 8584237, upload-time = "2025-06-06T11:41:37.59Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/61/10139239c1c5a8538ddf9259d3b02f22a513cbca0abbba06552bc81f2cdf/typetreegeneratorapi-0.0.6-cp36-abi3-musllinux_2_0_aarch64.whl", hash = "sha256:a1c897c8c0f1a504db6dc45f0fd65ba42002349243ccb21fcfe59159d504b31f", size = 8300772, upload-time = "2025-06-06T11:41:40.125Z" },
+    { url = "https://files.pythonhosted.org/packages/c1/c0/84cb601e65a9f01475cb38fa7c7f2bb9cce96b389065d078441f22cd389f/typetreegeneratorapi-0.0.6-cp36-abi3-musllinux_2_0_x86_64.whl", hash = "sha256:71e9bb9ad3288c0e3b00aa3fda64e852349d911d4df3bcc238f115638cc50065", size = 8584431, upload-time = "2025-06-06T11:41:41.877Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/40/31d8e7847ccbf4348c3fe764e91f1f2697777ae83a0c09b0a60475291451/typetreegeneratorapi-0.0.6-cp36-abi3-win32.whl", hash = "sha256:46c9f49a21a98e4d1dc7413173c59ff90c6af2f7af65e0028a39995aea46a7b4", size = 7318974, upload-time = "2025-06-06T11:41:43.905Z" },
+    { url = "https://files.pythonhosted.org/packages/4f/de/3fc2963f0857037a2036dd596ae83bd03866f01d5c87919ec8bb680a7c41/typetreegeneratorapi-0.0.6-cp36-abi3-win_amd64.whl", hash = "sha256:94441ac2ce972f8b74d2ddd867a83c7d22855ca142557bfedbb3ab260ecf0e45", size = 7520838, upload-time = "2025-06-06T11:41:46.587Z" },
+    { url = "https://files.pythonhosted.org/packages/2f/bb/66c0b40f71c8a200e8ffeec0874a59a4857445c201980697211047dd04f2/typetreegeneratorapi-0.0.6-cp36-abi3-win_arm64.whl", hash = "sha256:efa2beaa8864f10ac2495b6ad17fb3513e14417c4778d2d6e0b817090a73a5a9", size = 7240804, upload-time = "2025-06-06T11:41:48.687Z" },
 ]
 
 [[package]]
