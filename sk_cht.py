@@ -69,7 +69,7 @@ class Config:
     PLATFORM_NAME: str = "Unknown"
     GAME_ROOT_PATH: str = os.getcwd()
     
-    # --- 這裡是唯一的修改點：為所有路徑屬性提供初始值 ---
+    # --- 為所有路徑屬性提供初始值 ---
     SILKSONG_DATA_PATH: str = ""
     STREAMING_ASSETS_PLATFORM_PATH: str = ""
     BUNDLE_FILE_PATH: str = ""
@@ -224,7 +224,7 @@ def run_modding(text_folder_name: str):
         if os.path.exists(Config.TEMP_WORKSPACE_FOLDER): shutil.rmtree(Config.TEMP_WORKSPACE_FOLDER)
 
 def restore_backup():
-    # ... (此函式無需改動)
+
     print("\n[開始執行還原備份流程]")
     if not os.path.exists(Config.BACKUP_FOLDER):
         print("[錯誤] 找不到 'Backup' 資料夾，無法還原。")
@@ -246,7 +246,7 @@ def restore_backup():
         traceback.print_exc()
 
 def show_about():
-    # ... (此函式無需改動)
+
     print("\n" + "="*60)
     print("== 關於此工具 ==")
     print("\n本工具全程使用AI完成。")
@@ -260,7 +260,7 @@ def show_about():
 # --- 腳本核心邏輯 (處理 Unity 資源) ---
 # ==============================================================================
 def process_title_bundle(env):
-    # ... (此函式無需改動)
+
     print("[資訊] 開始處理 Title Bundle...")
     TARGET_ASSET_NAME_PREFIX = "sactx-0-1024x1024-BC7-Title-"
     SOURCE_PNG_NAME = "logo.png"
@@ -537,15 +537,16 @@ def main():
         else: os.system('clear')
 
         print("="*60)
-        print("== 絲綢之歌繁體中文化工具 v1.2 ==")
+        print("==絲綢之歌繁體中文化工具 v2.0 ==")
         print("="*60)
         print(f"目前平台: {Config.PLATFORM_NAME} (輸入 'T' 可手動切換)")
         print(f"遊戲目錄: {Config.GAME_ROOT_PATH}")
-        print("如果失敗請對此程式檔案點擊右鍵，並選擇「以系統管理員身分執行」。")
+        print("Windows系統如果工具使用失敗，請嘗試對此程式檔案點擊右鍵並選擇「以系統管理員身分執行」。")
         
         if not Config.BUNDLE_FILE_PATH or not os.path.exists(Config.BUNDLE_FILE_PATH):
              print(f"\n[警告] 無法根據當前平台 '{Config.PLATFORM_NAME}' 找到遊戲檔案。")
              print(f"請確認遊戲目錄是否正確，或嘗試手動切換平台。")
+             print(f"如果是GamePass版本請放到Content資料夾後再執行。")
 
         print("\n請選擇要執行的操作：\n")
         print("  1. 繁體中文化 (官方簡中)")
