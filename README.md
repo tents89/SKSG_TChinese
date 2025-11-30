@@ -60,8 +60,7 @@
 
 ## ⚠️ 注意
 
-* 本工具內含三種文本來源，[修車組](https://www.bilibili.com/video/BV19epDzrEut)、[本專案的社群翻譯](https://paratranz.cn/projects/16176)與官方中文。
-* 若修車組不願意被集成到本工具，請與我聯絡。
+* 本工具內含三種文本來源，[修車組](https://www.bilibili.com/video/BV19epDzrEut)(現在官方簡中)、[本專案的社群翻譯](https://paratranz.cn/projects/16176)與官方中文(舊版官方簡中)。
 * 不保證遊戲每次更新都可以使用，但相容性理應極高。
 * 本工具會直接修改遊戲檔案，雖然內建備份功能，但如果失效請對遊戲重新驗證檔案完整性。
 * 本工具為粉絲製作，與 Team Cherry 和 Unity Technologies 皆無關聯。請自行承擔使用風險。
